@@ -5,10 +5,12 @@ import (
 	"os/exec"
 
 	"flag"
+
+	"gopkg.in/mattes/go-expand-tilde.v1"
 )
 
 const (
-	BASE_DIR = "/home/joghurt/.sessions"
+	BASE_DIR = "~/.sessions"
 )
 
 func fileExists(path string) bool {
@@ -16,14 +18,16 @@ func fileExists(path string) bool {
 	return err == nil || !os.IsNotExist(err)
 }
 
-
-
 func main() {
 	flag.Parse()
 	if flag.NArg() > 0 {
+		base_dir, err := tilde.Expand(BASE_DIR)
+		if err != nil {
+			panic(err)
+		}
 		for _, arg := range flag.Args() {
 			// Actually reload a session
-			fullPath := BASE_DIR + "/" + arg
+			fullPath := base_dir + "/" + arg
 			if fileExists(fullPath) {
 				cmd := exec.Command("zsh", fullPath)
 				err := cmd.Run()
@@ -38,4 +42,3 @@ func main() {
 		flag.Usage()
 	}
 }
-
